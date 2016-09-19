@@ -75,11 +75,15 @@ class Server (BaseHTTPRequestHandler):
             SimpleHTTPRequestHandler.http_error(410)
             print("Already guessed this spot")
 
+    #Check value at spot
+    def check(x, y):
+        return board[x][y];
+    #check x and y coords at spot
+    def board_coords():
 
-
-
-    def check(self, x, y):
-        return self.board[x][y]
+    #Set board 
+    def set(x, y):
+        board[x][y] = "X";
 
 
 if __name__ == '__main__':
