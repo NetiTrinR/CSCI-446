@@ -40,43 +40,38 @@ class Server (BaseHTTPRequestHandler):
         content_length = int(self.headers.getHeader('content-length', 0))
         content = self.rfile.read(content_length)
         print content
-        return
+
+        return # Remove this
 
         # Spot is not on the board
         if(x < 0 || x > 10 || y < 0 || y > 10)
             SimpleHTTPRequestHandler.http_error(404)
+            return
 
-        spot = check(x_cord, y_cord)
-        if(spot = "~"):
-            spot.set("X")
-            print("Miss!")
-        else if(spot = "C"):
-            C -= 1
-            spot.set("X")
-            print("Hit!")
-        else if(spot = "B"):
-            B -= 1
-            spot.set("X")
-            print("Hit!")
-        else if(spot = "R"):
-            R -= 1
-            spot.set("X")
-            print("Hit!")
-        else if(spot = "B"):
-            S -= 1
-            spot.set("X")
-            print("Hit!")
-        else if(spot = "R"):
-            D -= 1
-            spot.set("X")
-            print("Hit!")
-        # If spot is already been guessed
-        else if(spot = "X"):
-            SimpleHTTPRequestHandler.http_error(410)
+        value = check(x, y)
+        hit_flag = false
+        if(value = "X"):
             print("Already guessed this spot")
-
-
-
+            SimpleHTTPRequestHandler.http_error(410)
+            return
+        else if(value = "~"):
+            print("Miss!")
+        else
+            hit_flag = true
+            print("Hit!")
+            if(value = "C"):
+                self.C -= 1
+            if(value = "B"):
+                self.B -= 1
+            else if(value = "D")
+                self.D -= 1
+            else if(value = "R"):
+                self.R -= 1
+            else if(value = "S"):
+                self.S -= 1
+            else if(value = "R"):
+                self.R -= 1
+        self.board[y][x] = "X"
 
     def check(self, x, y):
         return self.board[x][y]
