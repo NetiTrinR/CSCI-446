@@ -36,8 +36,39 @@ class Server (BaseHTTPRequestHandler):
         self.wfile.write(bytes(html, "utf8"))
         return
 
-    def do_POST(self):
-        print("Something else")
+    def do_POST(x_cord, y_cord):
+        spot = check(x_cord, y_cord);
+        if(spot = "~"):
+            spot.set("X");
+            print("Miss!");
+        else if(spot = "C"):
+            C -= 1;
+            spot.set("X");
+            print("Hit!");
+        else if(spot = "B"):
+            B -= 1;
+            spot.set("X");
+            print("Hit!");
+        else if(spot = "R"):
+            R -= 1;
+            spot.set("X");
+            print("Hit!")
+        else if(spot = "B"):
+            S -= 1;
+            spot.set("X");
+            print("Hit!");
+        else if(spot = "R"):
+            D -= 1;
+            spot.set("X");
+            print("Hit!")
+        # If spot is already been guessed
+        else if(spot = "X"):
+            SimpleHTTPRequestHandler.http_error_410();
+            print("Already guessed this spot")
+        # Spot is not on the board
+        else:
+            SimpleHTTPRequestHandler.http_error_404();
+            print("Out of Bounds")
 
     def check(self, x, y):
         return self.board[x][y]
