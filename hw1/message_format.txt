@@ -1,0 +1,4 @@
+Our message format is as follows:
+  If the fire message from the client is out of bounds our error message should be a 404
+  If the fire message from the client has already been guessed the error message should be 410
+  If the fire message from our client is a hit the message recieved should be OK
