@@ -71,6 +71,7 @@ class Handler(BaseHTTPRequestHandler):
             elif(value == "R"):
                 self.server.R -= 1
         self.server.board[y][x] = "X"
+        self.send_response(200)
 
         # If miss, reply miss
         # If hit, check if sunk, reply sunk with ship
