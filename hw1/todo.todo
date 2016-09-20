@@ -1,8 +1,0 @@
-Server:
- ☐ Get parameters from post request and parse out x and y
- ☐ Ensure errors are being sent correctly
- ☐ Send response after logic
-Client:
-README:
- ☐ Give instructions on how to install thirdparty libraries
-   ☐ jinja2 (pip install jinja2)
