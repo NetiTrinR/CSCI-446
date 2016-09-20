@@ -3,36 +3,41 @@
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from jinja2 import Template
+import urllib
 
 
-class Handler (BaseHTTPRequestHandler):
+class Handler(BaseHTTPRequestHandler):
 
-    protocol_version = "HTTP/1.1"
+
+    def do_HEAD(self):
+        s.send_response(200)
+        s.send_header("Content-type", "text/html")
+        s.end_headers()
 
     def do_GET(self):
-        # Response Code
+        # Set response code
         self.send_response(200)
-
         # Headers
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
         # Create template from html
-        # htmlFile = open("index.html", "r")
-        # template = Template(htmlFile.read())
-        # htmlFile.close()
+        htmlFile = open("index.html", "r")
+        template = Template(htmlFile.read())
+        htmlFile.close()
 
         # Render Html from template
-        # html = template.render(self.board="board")
-        html = "Hello world!"
+        html = template.render(board=self.server.board)
 
-        # Format html string to utf8 and send
+        # Format html string to utf8
         self.wfile.write(bytes(html, "utf8"))
         return
+
 
     def do_POST(self):
         content_length = int(self.headers.getHeader('content-length', 0))
         content = self.rfile.read(content_length)
+        print("Post method")
         print(content)
 
         return # Remove this
@@ -66,6 +71,11 @@ class Handler (BaseHTTPRequestHandler):
             elif(value == "R"):
                 self.server.R -= 1
         self.server.board[y][x] = "X"
+
+        # If miss, reply miss
+        # If hit, check if sunk, reply sunk with ship
+        # Else if hit, reply hit
+
 
 
 class Server (HTTPServer):

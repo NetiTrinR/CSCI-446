@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <title>CSCI 466 Battleship</title>
+    <link href="https://oxiago.com/resources/bootstrap/bootstrap.min.css" rel="stylesheet" media="screen">
+    <script type="text/javascript" src="https://oxiago.com/resources/bootstrap/bootstrap.min.js"></script>
+</head>
+<style type="text/css">
+    body{
+        max-width: 1200px;
+    }
+
+    div.col-sm-1{
+        height: 30px;
+    }
+</style>
+<body class="col-sm-12">
+    {% for col in board %}
+        <div class="row">
+            <div class="col-sm-1"></div>
+            {% for val in col %}
+                <div class="col-sm-1">{{ val }}</div>
+            {% endfor %}
+            <div class="col-sm-1"></div>
+        </div>
+    {% endfor %}
+</body>
+</html>
