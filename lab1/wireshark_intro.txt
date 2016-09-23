@@ -1,0 +1,14 @@
+a. List 3 different protocols that appear in the ptocool column in the unfiltered packet listing window in step 7.
+    1. SSL
+    2. TCP
+    3. SSDP
+
+b. How long did it it take from when the HTTP GET message was sent until the HTTP OK reply was received?
+    0.72650 seconds
+
+c. What is the Internet addresss of the gaia.cs.umass.edu? What is the internet adress of your computer?
+umass: 128.119.245.12
+ours: 153.90.41.102
+
+d. Print the two HTTP messages GET and OK referred to in question 2 above.
+
