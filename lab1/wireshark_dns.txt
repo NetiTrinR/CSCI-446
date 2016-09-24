@@ -1,20 +1,20 @@
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
-9.
-10.
-11.
-12.
-13.
-14.
-16.
-17.
-18.
-20.
-21.
-22.
+01. 61.135.157.156 (qq.com)
+02. nighthawk.dns.ox.ac.uk (www.ox.ac.uk)
+03. 98.136.189.41
+04. UDP
+05. 53; 51124
+06. 192.168.0.104; yes, they are same
+07. type A; no "answers"
+08. 3 "answers"; each of them contains website address with type, class. Morever, one answer contains cname where other two addr
+09. yes, it correspond with one of the addr in the "answers" provided by DNS response
+10. No
+11. 53; 51124
+12. 192.168.0.104; yes
+13. type A; yes
+14. 3 "answers"; each of them contains website address with type, class. Morever, one answer contains cname where other two addr
+16. 192.168.0.104; yes
+17. type PTR; no "answers"
+18. asia1.akam.net, use2.akam.net, asia2.akam.net, usw2.akam.net, ns1-173.akam.net, use5.akam.net,  eur5.akam.netns1-37.akam.net; no ip addresses
+20. 8.8.8.8; no, it is not ip address of my default local DNS server. it correspond to the DNS server we sent the request.
+21. type PTR and type A; no answers
+22. 1 answer is provided; the answer contains Name: google.com, Type: A (host Address) (1), Class: IN (0x0001), TTL: 299, Data Length: 4, Address: 216.58.216.142
