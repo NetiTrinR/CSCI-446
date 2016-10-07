@@ -12,7 +12,7 @@ class Packet:
     ## length of md5 checksum in hex
     checksum_length = 32
 
-    def __init__(self, seq_num, msg_S, ack = None):
+    def __init__(self, seq_num, msg_S, ack = "A"):
         self.seq_num = seq_num
         self.msg_S = msg_S
         self.ack = ack
@@ -32,7 +32,7 @@ class Packet:
         #convert sequence number of a byte field of seq_num_S_length bytes
         seq_num_S = str(self.seq_num).zfill(self.seq_num_S_length)
         #convert flags number of byte field of ack_num_S_length bytes
-        ack_S = str(self.ack).zfill(self.ack_num_S_length)
+        ack_S = str(self.ack).zfill(self.ack_S_length)
         #convert length to a byte field of length_S_length bytes
         length_S = str(self.length_S_length + len(seq_num_S) + self.checksum_length + len(self.msg_S) + self.ack_S_length).zfill(self.length_S_length)
         #compute the checksum
@@ -106,9 +106,10 @@ class RDT:
     def rdt_2_1_send(self, msg_S):
         p = Packet(self.seq_num, msg_S)
         self.seq_num += 1
-        self.network.udt_sent(p.get_byte_S())
+        self.network.udt_send(p.get_byte_S())
         #wait for an ack, if false, nack receieved, resend packet
-        if !self.ack_receive(): self.network.udt_sent(p.get_byte_S())
+        if self.ack_receive():
+            self.network.udt_send(p.get_byte_S())
 
 
     #Some serious WIP
@@ -131,7 +132,7 @@ class RDT:
                 ret_S = p.msg_S if (ret_S is None) else ret_S + p.msg_S
                 self.ack_send(p.msg_S)
             except RuntimeError:
-                self.nack_send(p.msg_S)
+                self.nack_send()
 
             #remove the packet bytes from the buffer
             self.byte_buffer = self.byte_buffer[length:]
@@ -144,18 +145,19 @@ class RDT:
         byte_S = self.network.udt_receive()
         self.byte_buffer += byte_S
         while True:
-            if(len(self.byte_buffer) < Packet.length_S_length+Packet.seq_num_S_length+Packet.ack_S_length)
+            if len(self.byte_buffer) < Packet.length_S_length+Packet.seq_num_S_length+Packet.ack_S_length:
                 return ret_S
             ack = Packet.get_ack(byte_buffer[:Packet.length_S_length+Packet.seq_num_S_length+Packet.ack_S_length])
             self.byte_buffer = self.byte_buffer[Packet.length_S_length+Packet.seq_num_S_length+Packet.ack_S_length:]
 
     def ack_send(self, msg_S):
         p = Packet(self.seq_num, msg_S, 'A')
-        self.network.udt_sent(p.get_byte_S())
+        self.network.udt_send(p.get_byte_S())
 
-    def nack_send(self, msg_S):
-        p = Packet(self.seq_num, msg_S, 'N')
-        self.network.udt_sent(p.get_byte_S())
+    def nack_send(self):
+        print("sending nack")
+        p = Packet(self.seq_num, 'N')
+        self.network.udt_send(p.get_byte_S())
 
     def rdt_3_0_send(self, msg_S):
         pass
@@ -173,16 +175,22 @@ if __name__ == '__main__':
 
     rdt = RDT(args.role, args.server, args.port)
     if args.role == 'client':
-        rdt.rdt_1_0_send('MSG_FROM_CLIENT')
+        # rdt.rdt_1_0_send('MSG_FROM_CLIENT')
+        # sleep(2)
+        # print(rdt.rdt_1_0_receive())
+        rdt.rdt_2_1_send('MSG_FROM_CLIENT')
         sleep(2)
-        print(rdt.rdt_1_0_receive())
+        print(rdt.rdt_2_1_receive())
         rdt.disconnect()
 
 
     else:
+        # sleep(1)
+        # print(rdt.rdt_1_0_receive())
+        # rdt.rdt_1_0_send('MSG_FROM_SERVER')
         sleep(1)
-        print(rdt.rdt_1_0_receive())
-        rdt.rdt_1_0_send('MSG_FROM_SERVER')
+        print(rdt.rdt_2_1_receive())
+        rdt.rdt_2_1_send('MSG_FROM_SERVER')
         rdt.disconnect()
 
 
