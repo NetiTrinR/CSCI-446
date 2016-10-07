@@ -96,6 +96,9 @@ class NetworkLayer:
                 pass
             except socket.timeout as err:
                 pass
+            except:
+                print("Server is offline.")
+                break
             if self.stop:
 #                 print (threading.currentThread().getName() + ': Ending')
                 return
