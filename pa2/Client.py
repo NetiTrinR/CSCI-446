@@ -14,28 +14,44 @@ if __name__ == '__main__':
             'Grove giveth and Gates taketh away. -- Bob Metcalfe (inventor of Ethernet) on the trend of hardware speedups not being able to keep up with software demands',
             'Wise men make proverbs, but fools repeat them. -- Samuel Palmer (1805-80)']
 
-
-    timeout = 2 #send the next message if not response
+    version = "2.1"
+    timeout = 2  #send the next message if not response
     time_of_last_data = time.time()
+    try:
+        rdt = RDT.RDT('client', args.server, args.port)
+        for msg_S in msg_L:
+            print('Converting: ' + msg_S)
+            if version == "2.1":
+                rdt.rdt_2_1_send(msg_S)
+            elif version == "3.1":
+                rdt.rdt_3_1_send(msg_S)
+            else:
+                rdt.rdt_1_0_send(msg_S)
 
-    rdt = RDT.RDT('client', args.server, args.port)
-    for msg_S in msg_L:
-        print('Converting: '+msg_S)
-        rdt.rdt_1_0_send(msg_S)
-
-        # try to receive message before timeout
-        msg_S = None
-        while msg_S == None:
-            msg_S = rdt.rdt_1_0_receive()
-            if msg_S is None:
-                if time_of_last_data + timeout < time.time():
+            # try to receive message before timeout
+            msg_S = None
+            while msg_S is None:
+                try:
+                    if version == "2.1":
+                        msg_S = rdt.rdt_2_1_receive()
+                    elif version == "3.1":
+                        msg_S = rdt.rdt_3_1_receive()
+                    else:
+                        msg_S = rdt.rdt_1_0_receive()
+                    if msg_S is None:
+                        if time_of_last_data + timeout < time.time():
+                            break
+                        else:
+                            continue
+                except:
+                    print("Server is offline.")
                     break
-                else:
-                    continue
-        time_of_last_data = time.time()
+            time_of_last_data = time.time()
 
-        #print the result
-        if msg_S:
-            print('to: '+msg_S+'\n')
+            #print the result
+            if msg_S:
+                print('to: ' + msg_S + '\n')
 
-    rdt.disconnect()
+        rdt.disconnect()
+    except:
+        print("Server is offline.")
