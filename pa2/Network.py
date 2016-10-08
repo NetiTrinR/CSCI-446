@@ -1,3 +1,4 @@
+import sys
 import argparse
 import socket
 import threading
@@ -11,7 +12,7 @@ import RDT
 class NetworkLayer:
     #configuration parameters
     prob_pkt_loss = 0
-    prob_byte_corr = 1
+    prob_byte_corr = .5
     prob_pkt_reorder = 0
 
     #class variables
@@ -98,7 +99,7 @@ class NetworkLayer:
                 pass
             except:
                 print("Server is offline.")
-                break
+                sys.exit()
             if self.stop:
 #                 print (threading.currentThread().getName() + ': Ending')
                 return

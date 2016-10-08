@@ -1,6 +1,6 @@
 import Network
 import argparse
-from time import sleep
+import time
 import hashlib
 
 
@@ -43,8 +43,8 @@ class Packet:
 
     @classmethod
     def get_ack(self, byte_S):
-        ack = byte_S[Packet.length_S_length+Packet.seq_num_S_length:Packet.length_S_length+Packet.seq_num_S_length+Packet.ack_S_length]
-        if ack == 'A':
+        before_ack = Packet.length_S_length + Packet.seq_num_S_length
+        if byte_S[before_ack : before_ack + Packet.ack_S_length] == 'A':
             return True
         else:
             return False
@@ -108,56 +108,65 @@ class RDT:
         self.seq_num += 1
         self.network.udt_send(p.get_byte_S())
         #wait for an ack, if false, nack receieved, resend packet
-        if self.ack_receive():
+        while not self.ack_receive():
             self.network.udt_send(p.get_byte_S())
 
-
-    #Some serious WIP
     def rdt_2_1_receive(self):
-        ret_S = None
-        byte_S = self.network.udt_receive()
-        self.byte_buffer += byte_S
-        #keep extracting packets - if reordered, could get more than one
+        st = time.time()
+        to = 5
         while True:
+            # What
+            if st + to < time.time():
+                return None
+            #keep extracting packets - if reordered, could get more than one
+            byte_S = self.network.udt_receive()
+            self.byte_buffer += byte_S
+
             #check if we have received enough bytes
             if(len(self.byte_buffer) < Packet.length_S_length):
-                return ret_S #not enough bytes to read packet length
+                continue
             #extract length of packet
             length = int(self.byte_buffer[:Packet.length_S_length])
             if len(self.byte_buffer) < length:
-                return ret_S #not enough bytes to read the whole packet
-            #create packet from buffer content and add to return string
-            try:
-                p = Packet.from_byte_S(self.byte_buffer[0:length])
-                ret_S = p.msg_S if (ret_S is None) else ret_S + p.msg_S
-                self.ack_send(p.msg_S)
-            except RuntimeError:
-                self.nack_send()
+                continue
 
-            #remove the packet bytes from the buffer
+            p_b_s = self.byte_buffer[0:length]
             self.byte_buffer = self.byte_buffer[length:]
-            #if this was the last packet, will return on the next iteration
+            #create packet from buffer content and add to return string because we have the correct length
+            try:
+                p = Packet.from_byte_S(p_b_s)
+                #Correct message recieved, send ack, clear buffer, return None ret_S next iteration
+                self.ack_send(True)
+                return p.msg_S
+            except RuntimeError:
+                #Incorrect message recieved, send nack, clear buffer, keep waiting
+                self.ack_send(False)
 
-
-    #Some serious WIP
     def ack_receive(self):
-        ret_S = None
-        byte_S = self.network.udt_receive()
-        self.byte_buffer += byte_S
         while True:
-            if len(self.byte_buffer) < Packet.length_S_length+Packet.seq_num_S_length+Packet.ack_S_length:
-                return ret_S
-            ack = Packet.get_ack(byte_buffer[:Packet.length_S_length+Packet.seq_num_S_length+Packet.ack_S_length])
-            self.byte_buffer = self.byte_buffer[Packet.length_S_length+Packet.seq_num_S_length+Packet.ack_S_length:]
+            #Keep collecting bytes
+            self.byte_buffer += self.network.udt_receive()
+            #Do we have enough bytes to grab the length of the incoming packet
+            if len(self.byte_buffer) < Packet.length_S_length:
+                continue
 
-    def ack_send(self, msg_S):
-        p = Packet(self.seq_num, msg_S, 'A')
+            length = int(self.byte_buffer[:Packet.length_S_length])
+            if len(self.byte_buffer) < length:
+                continue
+
+            ack = Packet.get_ack(self.byte_buffer[:length])
+            self.byte_buffer = self.byte_buffer[length:]
+            return ack
+
+    def ack_send(self, valid):
+        flag = None
+        if valid:
+            flag = 'A'
+        else:
+            flag = 'N'
+        p = Packet(self.seq_num, '', flag)
         self.network.udt_send(p.get_byte_S())
 
-    def nack_send(self):
-        print("sending nack")
-        p = Packet(self.seq_num, 'N')
-        self.network.udt_send(p.get_byte_S())
 
     def rdt_3_0_send(self, msg_S):
         pass

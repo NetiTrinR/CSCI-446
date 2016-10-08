@@ -1,3 +1,4 @@
+import sys
 import argparse
 import RDT
 import time
@@ -45,7 +46,9 @@ if __name__ == '__main__':
                             continue
                 except:
                     print("Server is offline.")
-                    break
+                    rdt.disconnect()
+                    sys.exit()
+
             time_of_last_data = time.time()
 
             #print the result
@@ -55,3 +58,4 @@ if __name__ == '__main__':
         rdt.disconnect()
     except:
         print("Server is offline.")
+        sys.exit()
