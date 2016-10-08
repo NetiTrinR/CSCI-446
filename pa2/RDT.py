@@ -108,7 +108,7 @@ class RDT:
         self.seq_num += 1
         self.network.udt_send(p.get_byte_S())
         #wait for an ack, if false, nack receieved, resend packet
-        while not self.ack_receive():
+        while not self.ack_receive(False):
             self.network.udt_send(p.get_byte_S())
 
     def rdt_2_1_receive(self):
@@ -133,8 +133,12 @@ class RDT:
 
             self.byte_buffer = self.byte_buffer[length:]
 
-    def ack_receive(self):
+    def ack_receive(self, wto):
+        st = time.time()
+        to = 0.5
         while True:
+            if wto and st + to < time.time():
+                return False
             #Keep collecting bytes
             self.byte_buffer += self.network.udt_receive()
             #Do we have enough bytes to grab the length of the incoming packet
@@ -155,39 +159,42 @@ class RDT:
 
 
     def rdt_3_0_send(self, msg_S):
-        st = time.time()
-        to = 5
-        while True:
-            # What
-            if st + to < time.time():
-                return None
-            #keep extracting packets - if reordered, could get more than one
-            byte_S = self.network.udt_receive()
-            self.byte_buffer += byte_S
+        p = Packet(self.seq_num, msg_S)
+        self.seq_num += 1
+        self.network.udt_send(p.get_byte_S())
+        #wait for an ack, if false, nack receieved, resend packet
+        while not self.ack_receive(True):
+            self.network.udt_send(p.get_byte_S())
 
-            #check if we have received enough bytes
-            if(len(self.byte_buffer) < Packet.length_S_length):
-                continue
-            #extract length of packet
-            length = int(self.byte_buffer[:Packet.length_S_length])
-            if len(self.byte_buffer) < length:
-                continue
-
-            p_b_s = self.byte_buffer[0:length]
-            self.byte_buffer = self.byte_buffer[length:]
-            #create packet from buffer content and add to return string because we have the correct length
-            try:
-                p = Packet.from_byte_S(p_b_s)
-                #Correct message recieved, send ack, clear buffer, return None ret_S next iteration
-                self.ack_send(True)
-                return p.msg_S
-            except RuntimeError:
-                #Incorrect message recieved, send nack, clear buffer, keep waiting
-                self.ack_send(False)
 
     def rdt_3_0_receive(self):
-        pass
+        ret_S = None
+        self.byte_buffer += self.network.udt_receive()
 
+        st = time.time()
+        to = 0.5
+        while True:
+            if st + to < time.time():
+                self.byte_buffer = ''
+                self.ack_send(False)
+                return None
+
+            if len(self.byte_buffer) < Packet.length_S_length:
+                return ret_S
+
+            length = int(self.byte_buffer[:Packet.length_S_length])
+            if len(self.byte_buffer) < length:
+                return ret_S
+
+            try:
+                p = Packet.from_byte_S(self.byte_buffer[:length])
+                ret_S = p.msg_S if ret_S is None else ret_s + p.msg_S
+
+                self.ack_send(True)
+            except RuntimeError:
+                self.ack_send(False)
+
+            self.byte_buffer = self.byte_buffer[length:]
 
 if __name__ == '__main__':
     parser =  argparse.ArgumentParser(description='RDT implementation.')

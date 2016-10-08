@@ -34,9 +34,16 @@ if __name__ == '__main__':
     time_of_last_data = time.time()
 
     rdt = RDT.RDT('server', None, args.port)
-    while(True):
+
+    version = "3.0"
+    while True:
         #try to receiver message before timeout
-        msg_S = rdt.rdt_2_1_receive()
+        if version  == "2.1":
+            msg_S = rdt.rdt_2_1_receive()
+        elif version == "3.0":
+            msg_S = rdt.rdt_3_0_receive()
+        else:
+            msg_S = rdt.rdt_1_0_receive()
         if msg_S is None:
             if time_of_last_data + timeout < time.time():
                 break
@@ -47,7 +54,12 @@ if __name__ == '__main__':
         #convert and reply
         rep_msg_S = piglatinize(msg_S)
         print('Converted %s \nto: %s\n' % (msg_S, rep_msg_S))
-        rdt.rdt_2_1_send(rep_msg_S)
+        if version  == "2.1":
+            rdt.rdt_2_1_send(msg_S)
+        elif version == "3.0":
+            rdt.rdt_3_0_send(msg_S)
+        else:
+            rdt.rdt_1_0_send(msg_S)
 
     rdt.disconnect()
 

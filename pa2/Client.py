@@ -15,7 +15,7 @@ if __name__ == '__main__':
             'Grove giveth and Gates taketh away. -- Bob Metcalfe (inventor of Ethernet) on the trend of hardware speedups not being able to keep up with software demands',
             'Wise men make proverbs, but fools repeat them. -- Samuel Palmer (1805-80)']
 
-    version = "2.1"
+    version = "3.0"
     timeout = 2  #send the next message if not response
     time_of_last_data = time.time()
     try:
@@ -24,8 +24,8 @@ if __name__ == '__main__':
             print('Converting: ' + msg_S)
             if version == "2.1":
                 rdt.rdt_2_1_send(msg_S)
-            elif version == "3.1":
-                rdt.rdt_3_1_send(msg_S)
+            elif version == "3.0":
+                rdt.rdt_3_0_send(msg_S)
             else:
                 rdt.rdt_1_0_send(msg_S)
 
@@ -35,8 +35,8 @@ if __name__ == '__main__':
                 try:
                     if version == "2.1":
                         msg_S = rdt.rdt_2_1_receive()
-                    elif version == "3.1":
-                        msg_S = rdt.rdt_3_1_receive()
+                    elif version == "3.0":
+                        msg_S = rdt.rdt_3_0_receive()
                     else:
                         msg_S = rdt.rdt_1_0_receive()
                     if msg_S is None:
