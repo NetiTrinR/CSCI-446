@@ -226,16 +226,21 @@ class Router:
                 print (threading.currentThread().getName() + ': Ending')
                 return
 
-class Message:
-    def __init__(self, byte_S):
-        self.byte_S = byte_S
+class RouterPacket:
+    # Use the NetworkPacket to do shit, encapsulate our shit into that shit dude
+    # Identify vector protcol parameters per packet and make vars
+    def __init__(self, vars):
+        self.vars = vars
 
     def __str__(self):
         return self.from_byte_S()
 
-    def to_byte_S(self, str):
-        #Something must go here
+    def to_byte_S(self):
+        # transofmr our vars into byte_S
 
+    def to_n_pkt(self):
+        return NetworkPacket.from_byte_S(self.to_byte_S())
+
+    @classmethod
     def from_byte_S(self):
         #Something must go here
-
