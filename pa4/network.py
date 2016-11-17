@@ -201,12 +201,9 @@ class Router:
 
     ## Print routing table
     def print_routes(self):
-        # print('%s: routing table' % self)
-        # #TODO: print the routes as a two dimensional table for easy inspection
-        # # Currently the function just prints the route table as a dictionary
-        # print(self.rt_tbl_D)
+        print("\n\nI do confirmed that I am printed multiple times har har\n\n")
         if str(self)=="Router_A":
-            print("       . ",end='\t')
+            print("\t",end='\t')
             for interface in range(len(self.intf_L)):
                 print(interface, end="\t")
             print("")
@@ -228,3 +225,17 @@ class Router:
             if self.stop:
                 print (threading.currentThread().getName() + ': Ending')
                 return
+
+class Message:
+    def __init__(self, byte_S):
+        self.byte_S = byte_S
+
+    def __str__(self):
+        return self.from_byte_S()
+
+    def to_byte_S(self, str):
+        #Something must go here
+
+    def from_byte_S(self):
+        #Something must go here
+
