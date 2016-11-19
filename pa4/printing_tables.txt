@@ -1,0 +1,10 @@
+Router A:
+        Host 1  Host 2
+int 0   1       ~
+int 1   ~       2
+
+
+Router B:
+        Host 1  Host 2
+int 0   1       ~
+int 1   ~       3

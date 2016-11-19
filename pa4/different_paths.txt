@@ -1,0 +1,42 @@
+Created link Link Host_1-0 - Router_A-0
+Created link Link Host_2-0 - Router_A-1
+Created link Link Router_A-2 - Router_B-0
+Created link Link Router_A-3 - Router_C-0
+Created link Link Router_B-1 - Router_D-0
+Created link Link Router_C-1 - Router_D-1
+Created link Link Router_D-2 - Host_3-0
+Host_1: Starting
+Host_2: Starting
+Host_3: Starting
+Router_A: Starting
+Router_B: Starting
+Router_C: Starting
+Router_D: Starting
+Network: Starting
+Host_1: sending packet "000031Sample h1 to h3 data 0"
+Host_3: sending packet "000011Sample h3 to h1 data 0"
+Link Router_D-2 - Host_3-0: transmitting packet "000011Sample h3 to h1 data 0" on Host_3 0 -> Router_D, 2
+Link Host_1-0 - Router_A-0: transmitting packet "000031Sample h1 to h3 data 0" on Host_1 0 -> Router_A, 0
+Router_D: forwarding packet "000011Sample h3 to h1 data 0" from interface 2 to 1
+Link Router_C-1 - Router_D-1: transmitting packet "000011Sample h3 to h1 data 0" on Router_D 1 -> Router_C, 1
+Router_A: forwarding packet "000031Sample h1 to h3 data 0" from interface 0 to 2
+Router_C: forwarding packet "000011Sample h3 to h1 data 0" from interface 1 to 0
+Link Router_A-2 - Router_B-0: transmitting packet "000031Sample h1 to h3 data 0" on Router_A 2 -> Router_B, 0
+Link Router_A-3 - Router_C-0: transmitting packet "000011Sample h3 to h1 data 0" on Router_C 0 -> Router_A, 3
+Router_A: forwarding packet "000011Sample h3 to h1 data 0" from interface 3 to 0
+Link Host_1-0 - Router_A-0: transmitting packet "000011Sample h3 to h1 data 0" on Router_A 0 -> Host_1, 0
+Router_B: forwarding packet "000031Sample h1 to h3 data 0" from interface 0 to 1
+Host_1: received packet "000011Sample h3 to h1 data 0"
+Link Router_B-1 - Router_D-0: transmitting packet "000031Sample h1 to h3 data 0" on Router_B 1 -> Router_D, 0
+Router_D: forwarding packet "000031Sample h1 to h3 data 0" from interface 0 to 2
+Link Router_D-2 - Host_3-0: transmitting packet "000031Sample h1 to h3 data 0" on Router_D 2 -> Host_3, 0
+Host_3: received packet "000031Sample h1 to h3 data 0"
+Router_B: Ending
+Host_2: Ending
+Router_A: Ending
+Network: Ending
+Host_1: Ending
+Host_3: Ending
+Router_D: Ending
+Router_C: Ending
+All simulation threads joined

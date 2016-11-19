@@ -3,15 +3,15 @@ Created on Oct 12, 2016
 
 @author: mwitt_000
 '''
-import network
-import link
+import network_1 as network
+import link_1 as link
 import threading
 from time import sleep
 import sys
 
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
-simulation_time = 1 #give the network sufficient time to transfer all packets before quitting
+simulation_time = 4 #give the network sufficient time to transfer all packets before quitting
 
 if __name__ == '__main__':
 	object_L = [] #keeps track of objects, so we can kill their threads
@@ -57,10 +57,15 @@ if __name__ == '__main__':
 	#send out routing information from router A to router B interface 0
 	router_a.send_routes(1)
 
+	# all the routers need to get the routing table updates before
+	# we start sending data. So, we will sleep for sometime before
+	# we start sending data between hosts
+	sleep(2)
+
 	#create some send events
 	for i in range(1):
 		client.udt_send(2, 'Sample client data %d' % i)
-		server.udt_send(1, 'Sample server data %d' % i)
+		# server.udt_send(1, 'Sample server data %d' % i)
 	#give the network sufficient time to transfer all packets before quitting
 	sleep(simulation_time)
 

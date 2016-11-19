@@ -182,13 +182,14 @@ class Router:
     def forward_packet(self, p, i):
         try:
             # Forwarding table to find the appropriate outgoing interface
+            if p.dst_addr not in self.rt_tbl_D:
+                print("destination address is not found in the routing table")
+                return
             min_c_int = min(self.rt_tbl_D[p.dst_addr],key=self.rt_tbl_D[p.dst_addr].get)
             self.intf_L[min_c_int].put(p.to_byte_S(), 'out', True)
             print('%s: forwarding packet "%s" from interface %d to %d' % (self, p, i, min_c_int))
         except queue.Full:
             print('%s: packet "%s" lost on interface %d' % (self, p, i))
-            pass
-        except:
             pass
 
     ## forward the packet according to the routing table
@@ -273,7 +274,7 @@ class RouterPacket:
         byte_S = ""
         for host in self.table:
             for interface in self.table[host]:
-                byte_S += " "+str(host) + ":" + str(interface) + ":" + str(self.table[host][interface])
+                byte_S += " " + str(host) + ":" + str(interface) + ":" + str(self.table[host][interface])
         return byte_S
 
     def to_n_pkt(self):
