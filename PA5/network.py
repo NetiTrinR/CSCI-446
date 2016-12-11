@@ -12,8 +12,11 @@ class Interface:
     ## @param maxsize - the maximum size of the queue storing packets
     #  @param cost - of the interface used in routing
     def __init__(self, cost=0, maxsize=0, capacity=500):
-        self.in_queue = queue.Queue(maxsize);
-        self.out_queue = queue.Queue(maxsize);
+        self.in_queue_0 = queue.Queue(maxsize);
+        self.in_queue_1 = queue.Queue(maxsize);
+        self.out_queue_0 = queue.Queue(maxsize);
+        self.out_queue_1 = queue.Queue(maxsize);
+
         self.cost = cost
         self.capacity = capacity #serialization rate
         self.next_avail_time = 0 #The next time a packet can transmit
@@ -23,16 +26,21 @@ class Interface:
     def get(self, in_or_out):
         try:
             if in_or_out == 'in':
-                pkt_S = self.in_queue.get(False)
-#                 if pkt_S is not None:
-#                     print('getting packet from the IN queue')
-                return pkt_S
+                # print('getting packet from the IN queue') #:-)
+                if not self.in_queue_1.empty():
+                    pkt_S = self.in_queue_1.get(False)
+                else:
+                    pkt_S = self.in_queue_0.get(False)
             else:
-                pkt_S = self.out_queue.get(False)
-#                 if pkt_S is not None:
-#                     print('getting packet from the OUT queue')
-                return pkt_S
+                # print('getting packet from the OUT queue') #:-)
+                if not self.out_queue_1.empty():
+                    pkt_S = self.out_queue_1.get(False)
+                else:
+                    pkt_S = self.out_queue_0.get(False)
+
+            return pkt_S
         except queue.Empty:
+            # print(in_or_out + ' - Both priorities empty') #:-)
             return None
 
     ##put the packet into the interface queue
@@ -40,12 +48,35 @@ class Interface:
     # @param in_or_out - use 'in' or 'out' interface
     # @param block - if True, block until room in queue, if False may throw queue.Full exception
     def put(self, pkt, in_or_out, block=False):
+        p = NetworkPacket.from_byte_S(pkt)
         if in_or_out == 'out':
-#             print('putting packet in the OUT queue')
-            self.out_queue.put(pkt, block)
+            print('putting packet in the OUT queue') #:-)
+            if p.priority == 1:
+                self.out_queue_1.put(pkt,block)
+            elif p.priority == 0:
+                self.out_queue_0.put(pkt,block)
+            else:
+                print('Unrecognized priority')
         else:
-#             print('putting packet in the IN queue')
-            self.in_queue.put(pkt, block)
+            if p.priority == 1:
+                self.in_queue_1.put(pkt,block)
+            elif p.priority == 0:
+                self.in_queue_0.put(pkt,block)
+            else:
+                print('Unrecognized priority')
+
+    def is_queue_empty(self, in_or_out):
+        if in_or_out == 'in':
+            return self.in_queue_1.empty() and self.in_queue_0.empty()
+        else:
+            return self.out_queue_1.empty() and self.out_queue_0.empty()
+
+    def get_qsize(self, in_or_out):
+        if in_or_out == 'in':
+            return self.in_queue_1.qsize() + self.in_queue_0.qsize()
+        else:
+            return self.out_queue_1.qsize() + self.out_queue_0.qsize()
+
 
 
 ## Implements a network layer packet (different from the RDT packet
@@ -56,6 +87,7 @@ class NetworkPacket:
     ## packet encoding lengths
     dst_addr_S_length = 5
     prot_S_length = 1
+    priority_S_length = 1
 
     ##@param dst_addr: address of the destination host
     # @param data_S: packet payload
@@ -79,6 +111,11 @@ class NetworkPacket:
             byte_S += '2'
         else:
             raise('%s: unknown prot_S option: %s' %(self, self.prot_S))
+
+        if self.priority > 1:
+            raise('%s: unknown priority: %s' %(self, self.priority))
+
+        byte_S += str(self.priority)
         byte_S += self.data_S
         return byte_S
 
@@ -94,8 +131,11 @@ class NetworkPacket:
             prot_S = 'control'
         else:
             raise('%s: unknown prot_S field: %s' %(self, prot_S))
-        data_S = byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.prot_S_length : ]
-        return self(dst_addr, prot_S, data_S)
+        priority = int(byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.prot_S_length : NetworkPacket.dst_addr_S_length + NetworkPacket.prot_S_length + NetworkPacket.priority_S_length])
+        if priority > 1:
+            raise('%s: unknown priority: %s' %(self, self.priority))
+        data_S = byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.prot_S_length + NetworkPacket.priority_S_length: ]
+        return self(dst_addr, prot_S, data_S, priority)
 
 
 
@@ -108,38 +148,21 @@ class Host:
         self.addr = addr
         self.intf_L = [Interface()]
         self.stop = False  #for thread termination
-        self.pkt_queue = []
         self.pkt_queue_0 = []
         self.pakt_queue_1 = []
-        self.pkt_queue_stat = {}
 
     ## called when printing the object
     def __str__(self):
         return 'Host_%s' % (self.addr)
 
-    def qu_add(self, pkt):
-        if pkt.priority == 0:
-            self.pkt_queue_0.insert(pkt)
-        elif pkt.priority == 1:
-            self.pakt_queue_1.insert(pkt)
-        else:
-            print('Unrecognized Priority')
-
 
     ## create a packet and enqueue for transmission
     # @param dst_addr: destination address for the packet
     # @param data_S: data being transmitted to the network layer
-    def udt_send(self, dst_addr, data_S, priority =0):
-        self.pkt_queue.append(NetworkPacket(dst_addr, 'data', data_S, priority))
-        if priority not in self.pkt_queue_stat.keys():
-            self.pkt_queue_stat[priority] = 0
-        self.pkt_queue_stat[priority] += 1
-        #self.pkt_queue.sort(key= x.priority)
-        self.pkt_queue_stat.qu_add( key = itemgetter(0), reverse = True)
-        p = self.pkt_queue.pop(0)
+    def udt_send(self, dst_addr, data_S, priority = 0):
+        p = NetworkPacket(dst_addr, 'data', data_S, priority)
         print('%s: sending packet "%s"  with priority: %s' % (self, p, priority))
         self.intf_L[0].put(p.to_byte_S(), 'out') #send packets always enqueued successfully
-        self.pkt_queue_stat[p.priority] -= 1
 
     ## receive packet from the network layer
     def udt_receive(self):
