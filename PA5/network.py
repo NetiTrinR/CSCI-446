@@ -5,7 +5,7 @@ Created on Oct 12, 2016
 '''
 import queue
 import threading
-
+from operator import itemgetter
 
 ## wrapper class for a queue of packets
 class Interface:
@@ -60,10 +60,11 @@ class NetworkPacket:
     ##@param dst_addr: address of the destination host
     # @param data_S: packet payload
     # @param prot_S: upper layer protocol for the packet (data, or control)
-    def __init__(self, dst_addr, prot_S, data_S):
+    def __init__(self, dst_addr, prot_S, data_S, priority =0):
         self.dst_addr = dst_addr
         self.data_S = data_S
         self.prot_S = prot_S
+        self.priority = priority
 
     ## called when printing the object
     def __str__(self):
@@ -106,19 +107,39 @@ class Host:
     def __init__(self, addr):
         self.addr = addr
         self.intf_L = [Interface()]
-        self.stop = False #for thread termination
+        self.stop = False  #for thread termination
+        self.pkt_queue = []
+        self.pkt_queue_0 = []
+        self.pakt_queue_1 = []
+        self.pkt_queue_stat = {}
 
     ## called when printing the object
     def __str__(self):
         return 'Host_%s' % (self.addr)
 
+    def qu_add(self, pkt):
+        if pkt.priority == 0:
+            self.pkt_queue_0.insert(pkt)
+        elif pkt.priority == 1:
+            self.pakt_queue_1.insert(pkt)
+        else:
+            print('Unrecognized Priority')
+
+
     ## create a packet and enqueue for transmission
     # @param dst_addr: destination address for the packet
     # @param data_S: data being transmitted to the network layer
     def udt_send(self, dst_addr, data_S, priority =0):
-        p = NetworkPacket(dst_addr, 'data', data_S)
-        print('%s: sending packet "%s"' % (self, p))
+        self.pkt_queue.append(NetworkPacket(dst_addr, 'data', data_S, priority))
+        if priority not in self.pkt_queue_stat.keys():
+            self.pkt_queue_stat[priority] = 0
+        self.pkt_queue_stat[priority] += 1
+        #self.pkt_queue.sort(key= x.priority)
+        self.pkt_queue_stat.qu_add( key = itemgetter(0), reverse = True)
+        p = self.pkt_queue.pop(0)
+        print('%s: sending packet "%s"  with priority: %s' % (self, p, priority))
         self.intf_L[0].put(p.to_byte_S(), 'out') #send packets always enqueued successfully
+        self.pkt_queue_stat[p.priority] -= 1
 
     ## receive packet from the network layer
     def udt_receive(self):
@@ -153,7 +174,7 @@ class Router:
         #note the number of interfaces is set up by out_intf_cost_L
         assert(len(intf_cost_L) == len(intf_capacity_L))
         self.intf_L = []
-        for i in range(intf_cost_L):
+        for i in range(len(intf_cost_L)):
             self.intf_L.append(Interface(intf_cost_L[i], max_queue_size, intf_capacity_L[i]))
         #set up the routing table for connected hosts
         self.rt_tbl_D = rt_tbl_D
@@ -189,7 +210,7 @@ class Router:
                 print("%s: destination address (%d) is not found in the routing table" % (self.name, p.dst_addr))
                 return
             min_c_int = min(self.rt_tbl_D[p.dst_addr],key=self.rt_tbl_D[p.dst_addr].get)
-            self.intf_L[min_c_int].put(p.to_byte_S(), 'out', True)
+            self.intf_L[(i+1)%2].put(p.to_byte_S(), 'out', True)
             print('%s: forwarding packet "%s" from interface %d to %d' % (self, p, i, min_c_int))
         except queue.Full:
             #Need to update this assuming outgoing interface is (i+1)%2
