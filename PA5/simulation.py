@@ -21,42 +21,62 @@ if __name__ == '__main__':
 	object_L.append(h1)
 	h2 = network.Host(2)
 	object_L.append(h2)
+	h3 = network.Host(3)
+	object_L.append(h3)
 
 
 	#create routers and routing tables for connected clients (subnets)
-	# router_a_rt_tbl_D = {1: {0: 1}, 2: {1: 1}, 3: {2:2}} # packet to host 1 through interface 0 for cost 1
+	router_a_rt_tbl_D = {1: {0: 1}, 2: {1: 1}, 3: {2:2}} # packet to host 1 through interface 0 for cost 1
 	router_a_rt_tbl_D = {1: {0: 1}} #packet to host 1 through interface 0 for cost of 1
+	router_a_mpls_tbl_L = [{'l_in':None,'l_out':2,'dest':3,'i_out':2}]
 	router_a = network.Router(name='A',
-							  intf_cost_L=[1,1],
-							  intf_capacity_L =[500,500],
+							  intf_cost_L=[1,1,1,1],
+							  intf_capacity_L =[500,500,500,500],
 							  rt_tbl_D = router_a_rt_tbl_D,
-							  max_queue_size=router_queue_size)
+							  max_queue_size=router_queue_size,
+							  mpls_tbl_L=router_a_mpls_tbl_L)
 	object_L.append(router_a)
 
-	# router_b_rt_tbl_D = {3: {1: 1}, 1:{0:1}} # packet to host 2 through interface 1 for cost 3
+	router_b_rt_tbl_D = {3: {1: 1}, 1:{0:1}} # packet to host 2 through interface 1 for cost 3
 	router_b_rt_tbl_D = {2: {1: 3}}
+	router_b_mpls_tbl_L = [
+		{'l_in':2, 'l_out':3, 'dest':3,'i_out':1},
+		{'l_in':5, 'l_out':7, 'dest':1,'i_out':0},
+		{'l_in':11,'l_out':13,'dest':2,'i_out':0}]
 	router_b = network.Router(name='B',
 							  intf_cost_L=[1,3],
 							  intf_capacity_L = [500,100],
 							  rt_tbl_D = router_b_rt_tbl_D,
-							  max_queue_size=router_queue_size)
+							  max_queue_size=router_queue_size,
+							  mpls_tbl_L=router_b_mpls_tbl_L)
 	object_L.append(router_b)
 
-	# # router_c_rt_tbl_D = {3: {1: 1}} # packet to host 1 through interface 0 for cost 1
-	# router_c_rt_tbl_D = {1:{0:4},2:{0:4},3:{1:2}}
-	# router_c = network.Router(name='C',
-	# 						  intf_cost_L=[3,1],
-	# 						  rt_tbl_D = router_c_rt_tbl_D,
-	# 						  max_queue_size=router_queue_size)
-	# object_L.append(router_c)
+	router_c_rt_tbl_D = {3: {1: 1}} # packet to host 1 through interface 0 for cost 1
+	router_c_rt_tbl_D = {1:{0:4},2:{0:4},3:{1:2}}
+	router_c_mpls_tbl_L = [
+		{'l_in':2, 'l_out':3, 'dest':3,'i_out':1},
+		{'l_in':5, 'l_out':7, 'dest':1,'i_out':0},
+		{'l_in':11,'l_out':13,'dest':2,'i_out':0}]
+	router_c = network.Router(name='C',
+							  intf_cost_L=[3,1],
+							  intf_capacity_L =[500,200],
+							  rt_tbl_D = router_c_rt_tbl_D,
+							  max_queue_size=router_queue_size,
+							  mpls_tbl_L=router_c_mpls_tbl_L)
+	object_L.append(router_c)
 
-	# # router_d_rt_tbl_D = {1: {0: 4}, 3: {2: 1}} # packet to host 1 through interface 0 for cost 1
-	# router_d_rt_tbl_D = {1:{0:7,1:5},2:{0:7,1:5},3:{2:1}}
-	# router_d = network.Router(name='D',
-	# 						  intf_cost_L=[1,1,1],
-	# 						  rt_tbl_D = router_d_rt_tbl_D,
-	# 						  max_queue_size=router_queue_size)
-	# object_L.append(router_d)
+	router_d_rt_tbl_D = {1: {0: 4}, 3: {2: 1}} # packet to host 1 through interface 0 for cost 1
+	router_d_rt_tbl_D = {1:{0:7,1:5},2:{0:7,1:5},3:{2:1}}
+	router_d_mpls_tbl_L = [
+		{'l_in':None,'l_out':5, 'dest':1,'i_out':0},
+		{'l_in':None,'l_out':11,'dest':2,'i_out':0}]
+	router_d = network.Router(name='D',
+							  intf_cost_L=[1,1,1],
+							  intf_capacity_L =[500,300, 20],
+							  rt_tbl_D = router_d_rt_tbl_D,
+							  max_queue_size=router_queue_size,
+							  mpls_tbl_L=router_d_mpls_tbl_L)
+	object_L.append(router_d)
 
 	#create a Link Layer to keep track of links between network nodes
 	link_layer = link.LinkLayer()
@@ -64,9 +84,22 @@ if __name__ == '__main__':
 
 	#add all the links
 	link_layer.add_link(link.Link(h1, 0, router_a, 0))
+	link_layer.add_link(link.Link(h2, 0, router_a, 1))
+
+	link_layer.add_link(link.Link(router_a, 2, router_b, 0))
+	link_layer.add_link(link.Link(router_a, 3, router_c, 0))
+
+	link_layer.add_link(link.Link(router_b, 1, router_d, 0))
+
+	link_layer.add_link(link.Link(router_c, 1, router_d, 1))
+
+	link_layer.add_link(link.Link(router_d, 2, h3, 0))
+
+
+	# link_layer.add_link(link.Link(h1, 0, router_a, 0))
 	# link_layer.add_link(link.Link(h2, 0, router_a, 1))
-	link_layer.add_link(link.Link(router_a, 1, router_b, 0))
-	link_layer.add_link(link.Link(router_b, 1, h2, 0))
+	# link_layer.add_link(link.Link(router_a, 1, router_b, 0))
+	# link_layer.add_link(link.Link(router_b, 1, h2, 0))
 	# link_layer.add_link(link.Link(router_b, 1, router_d, 0))
 	# link_layer.add_link(link.Link(router_c, 1, router_d, 1))
 	# link_layer.add_link(link.Link(router_d, 2, h3, 0))
@@ -90,7 +123,7 @@ if __name__ == '__main__':
 	for i in range(5):
 		priority = i%2
 		print(priority)
-		h1.udt_send(2, 'Sample h1 data %d' % i, priority)
+		h1.udt_send(3, 'Sample h1 data %d' % i, priority)
 		# h3.udt_send(1, 'Sample h3 to h1 data %d' % i)
 	#give the network sufficient time to transfer all packets before quitting
 	sleep(simulation_time)
