@@ -304,7 +304,7 @@ class Router:
                 print("%s: destination address (%d) is not found in the routing table" % (self.name, p.dst_addr))
                 return
             min_c_int = min(self.rt_tbl_D[p.dst_addr],key=self.rt_tbl_D[p.dst_addr].get)
-            self.intf_L[(i+1)%2].put(p.to_byte_S(), 'out', True)
+            self.intf_L[min_c_int].put(p.to_byte_S(), 'out', True)
             print('%s: forwarding packet "%s" from interface %d to %d' % (self, p, i, min_c_int))
         except queue.Full:
             #Need to update this assuming outgoing interface is (i+1)%2

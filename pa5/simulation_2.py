@@ -11,7 +11,7 @@ import sys
 
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
-simulation_time = 10 #give the network sufficient time to transfer all packets before quitting
+simulation_time = 20 #give the network sufficient time to transfer all packets before quitting
 
 if __name__ == '__main__':
 	object_L = [] #keeps track of objects, so we can kill their threads
@@ -65,7 +65,7 @@ if __name__ == '__main__':
 							  mpls_tbl_L=router_c_mpls_tbl_L)
 	object_L.append(router_c)
 
-	router_d_rt_tbl_D = {1: {0: 4}, 3: {2: 1}} # packet to host 1 through interface 0 for cost 1
+	# router_d_rt_tbl_D = {1: {0: 4}, 3: {2: 1}} # packet to host 1 through interface 0 for cost 1
 	router_d_rt_tbl_D = {1:{0:7,1:5},2:{0:7,1:5},3:{2:1}}
 	router_d_mpls_tbl_L = [
 		{'l_in':None,'l_out':5, 'dest':1,'i_out':0},
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 	# router_a.send_routes(1)
 
 	#create some send events
-	for i in range(5):
+	for i in range(2):
 		priority = i%2
 		print(priority)
 		h1.udt_send(3, 'Sample h1 data %d' % i, priority)
