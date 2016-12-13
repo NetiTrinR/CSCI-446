@@ -3,8 +3,8 @@ Created on Oct 12, 2016
 
 @author: mwitt_000
 '''
-import network
-import link
+import network_1 as network
+import link_1 as link
 import threading
 from time import sleep
 import sys
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
 	# we cant update the routing tables because if we do so the routers
 	# will always forward the data packets though the minimum cost path
-	
+
 	#send out routing information from router A to router B interface 0
 	# router_a.send_routes(1)
 
